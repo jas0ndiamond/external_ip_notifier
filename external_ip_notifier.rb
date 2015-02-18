@@ -25,8 +25,10 @@ EOF
   end
 end
 
+abort("No config file specified") unless ARGV[0];
+
 #attempt to load the cached ip
-config_file ="config.yaml" 
+config_file = ARGV[0]
 ip_directive = "cached_ip"
 
 abort("Could not find config file " + config_file) unless File.exists?(config_file)
@@ -42,12 +44,16 @@ external_ip.chomp!
 
 if( !cached_ip or external_ip != cached_ip )
    
+  begin
   #alert the people
-  send_mail(external_ip, config)
-  
-  config[ip_directive] = external_ip
-  
-  #overwrite cached ip
-  File.open(config_file, 'w') {|f| f.write config.to_yaml }
+    send_mail(external_ip, config)
+    
+    config[ip_directive] = external_ip
+    
+    #overwrite cached ip
+    File.open(config_file, 'w') {|f| f.write config.to_yaml }
+  rescue Exception => e
+     puts "Error sending update: " + e.message
+  end
 end
 
